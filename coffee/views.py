@@ -1,8 +1,10 @@
-from django.db.migrations import serializer
+from unicodedata import category
+
+from django.views.generic import detail
 from rest_framework import viewsets
 from coffee.serilizator import Drinkserializers, Categoryserializers, Orderserializers
 from .models import Drink, Category, Order
-from rest_framework.decorators import api_view, action
+from rest_framework.decorators import action
 from rest_framework.response import Response
 
 
@@ -16,9 +18,30 @@ class DrinkViewSet(viewsets.ModelViewSet):
         drks = Drinkserializers(drinks, many=True)
         return Response(drks.data)
 
+    @action(detail=False, methods=['get'])
+    def low_price(self, request):
+        drinks = Drink.objects.all().order_by('price')
+        drks = Drinkserializers(drinks, many=True)
+        return Response(drks.data)
+
+    @action(detail=False, methods=['get'], url_path='most-expensive')
+    def expensive_drink(self, request):
+        drink = Drink.objects.all().order_by('-price').first()
+        drk = Drinkserializers(drink)
+        return Response(drk.data)
+
+
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = Categoryserializers
+
+    @action(detail=True, methods=['get'])
+    def all_drinks(self, request, pk=None):
+        ctg_drinks = Drink.objects.filter(category=pk)
+        serializer = Drinkserializers(ctg_drinks, many=True)
+        return Response(serializer.data)
+
+
 
 class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
@@ -30,3 +53,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         serializer = Orderserializers(order)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['get'])
+    def all_orders(self, request):
+        order = Order.objects.count()
+        return Response({'count': order})
