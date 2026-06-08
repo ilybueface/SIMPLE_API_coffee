@@ -1,6 +1,8 @@
 from rest_framework import viewsets
 from coffee.serilizator import Drinkserializers, Categoryserializers, Orderserializers
 from .models import Drink, Category, Order
+from .filter import DrinkFilter
+from .pagination import CustomMetaPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
@@ -8,6 +10,9 @@ from rest_framework.response import Response
 class DrinkViewSet(viewsets.ModelViewSet):
     queryset = Drink.objects.all()
     serializer_class = Drinkserializers
+    filterset_fields = ['category__id', 'price']
+    filterset_class = DrinkFilter
+    pagination_class = CustomMetaPagination
 
     @action(detail=False, methods=['get'])
     def cheap_drinks(self, request):
