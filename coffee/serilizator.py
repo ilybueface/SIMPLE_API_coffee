@@ -1,4 +1,4 @@
-from .models import Drink, Category, Order
+from .models import Drink, Category, Order, Review
 from rest_framework import serializers
 
 
@@ -36,4 +36,21 @@ class Orderserializers(serializers.ModelSerializer):
             'date',
             'drink',
             'drink_id'
+        ]
+
+
+class Reviewserializers(serializers.ModelSerializer):
+    drink = Drinkserializers(read_only=True)
+    drink_id = serializers.IntegerField(write_only=True)
+    author = serializers.StringRelatedField(read_only=True)
+    class Meta:
+        model = Review
+        fields = [
+            'id',
+            'drink',
+            'drink_id',
+            'author',
+            'text',
+            'rating',
+            'created_at'
         ]

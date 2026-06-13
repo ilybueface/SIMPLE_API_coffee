@@ -1,12 +1,13 @@
 from rest_framework import viewsets
-from coffee.serilizator import Drinkserializers, Categoryserializers, Orderserializers
-from .models import Drink, Category, Order
+from coffee.serilizator import Drinkserializers, Categoryserializers, Orderserializers, Reviewserializers
+from .models import Drink, Category, Order, Review
 from .permissions import IsAdminOrReadOnly
 from .filter import DrinkFilter
 from .pagination import CustomMetaPagination
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 
 class DrinkViewSet(viewsets.ModelViewSet):
@@ -63,3 +64,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     def all_orders(self, request):
         order = Order.objects.count()
         return Response({'count': order})
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = Reviewserializers
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)

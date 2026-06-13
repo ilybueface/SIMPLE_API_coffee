@@ -8,6 +8,7 @@
 <body>
 <nav>
     <h1> Coffee SHOP </h1>
+    <a href="#"> Меню </a>
 </nav>
 
 <main>
@@ -30,6 +31,19 @@
             </div>
     </div>
 </main>
+
+
+<script>
+    fetch('http://127.0.0.1:8000/coffee/category/')
+        .then(response => response.json())
+        .then(data => {
+            console.log(data)
+            data.results.forEach(category => {
+            console.log(category.name)});
+        }
+        );
+</script>
+
 
 </body>
 </html>
