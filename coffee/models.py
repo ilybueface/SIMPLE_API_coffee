@@ -27,8 +27,16 @@ class Order(models.Model):
 
 
 class Review(models.Model):
-    drink = models.ForeignKey(Drink, on_delete=models.CASCADE)
-    author = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    drink = models.ForeignKey(
+        Drink,
+        on_delete=models.CASCADE
+    )
+    author = models.ForeignKey(
+            User,
+            on_delete=models.SET_NULL,
+            null=True,
+            blank=True,
+    )
     text = models.TextField()
     rating = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -36,3 +44,12 @@ class Review(models.Model):
     def __str__(self):
         return f" {self.drink} {self.rating}"
 
+
+class Promotion(models.Model):
+    title = models.CharField(max_length=300)
+    discount_percent = models.IntegerField()
+    active_until = models.DateField()
+    drinks = models.ManyToManyField(Drink)
+
+    def __str__(self):
+        return f"{self.drinks} {self.title} "

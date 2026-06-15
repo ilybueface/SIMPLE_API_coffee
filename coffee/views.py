@@ -1,6 +1,12 @@
 from rest_framework import viewsets
-from coffee.serilizator import Drinkserializers, Categoryserializers, Orderserializers, Reviewserializers
-from .models import Drink, Category, Order, Review
+from coffee.serilizator import (
+    Drinkserializers,
+    Categoryserializers,
+    Orderserializers,
+    Reviewserializers,
+    Promotionserializers,
+)
+from .models import Drink, Category, Order, Review, Promotion
 from .permissions import IsAdminOrReadOnly
 from .filter import DrinkFilter
 from .pagination import CustomMetaPagination
@@ -70,6 +76,25 @@ class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
     serializer_class = Reviewserializers
     permission_classes = [IsAuthenticatedOrReadOnly]
+    filterset_fields = ['rating', 'drink__id']
+    pagination_class = CustomMetaPagination
+
+    @action(detail=False, methods=['GET'])
+    def top_review(self, request):
+        review = Review.objects.filter(rating__gte=4).order_by('-rating')
+        rwv = Reviewserializers(review, many=True)
+        return Response(rwv.data)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+
+class PromotionViewSet(viewsets.ModelViewSet):
+    queryset = Promotion.objects.all()
+    serializer_class = Promotionserializers
+    permission_classes = [IsAdminOrReadOnly]
+
+    def perform_create(self, serializer):
+        drinks = serializer.validated_data.pop('drinks_ids')
+        promotion = serializer.save()
+        promotion.drinks.set(drinks)

@@ -1,4 +1,4 @@
-from .models import Drink, Category, Order, Review
+from .models import Drink, Category, Order, Review, Promotion
 from rest_framework import serializers
 
 
@@ -14,6 +14,7 @@ class Categoryserializers(serializers.ModelSerializer):
 class Drinkserializers(serializers.ModelSerializer):
     category = Categoryserializers(read_only=True)
     category_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Drink
         fields = [
@@ -25,10 +26,10 @@ class Drinkserializers(serializers.ModelSerializer):
         ]
 
 
-
 class Orderserializers(serializers.ModelSerializer):
     drink = Drinkserializers(read_only=True)
     drink_id = serializers.IntegerField(write_only=True)
+
     class Meta:
         model = Order
         fields = [
@@ -43,6 +44,7 @@ class Reviewserializers(serializers.ModelSerializer):
     drink = Drinkserializers(read_only=True)
     drink_id = serializers.IntegerField(write_only=True)
     author = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Review
         fields = [
@@ -53,4 +55,22 @@ class Reviewserializers(serializers.ModelSerializer):
             'text',
             'rating',
             'created_at'
+        ]
+
+
+class Promotionserializers(serializers.ModelSerializer):
+    drinks = Drinkserializers(read_only=True, many=True)
+    drinks_ids = serializers.PrimaryKeyRelatedField(
+        many=True, write_only=True, queryset=Drink.objects.all()
+    )
+
+    class Meta:
+        model = Promotion
+        fields = [
+            'id',
+            'drinks',
+            'drinks_ids',
+            'title',
+            'discount_percent',
+            'active_until',
         ]
