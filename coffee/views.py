@@ -6,6 +6,7 @@ from coffee.serilizator import (
     Promotionserializers,
     Favoriteserializer,
 )
+from rest_framework.filters import SearchFilter
 from rest_framework import viewsets
 from .models import Drink, Category, Order, Review, Promotion, Favorite
 from .permissions import IsAdminOrReadOnly
@@ -24,6 +25,8 @@ class DrinkViewSet(viewsets.ModelViewSet):
     filterset_class = DrinkFilter
     pagination_class = CustomMetaPagination
     permission_classes = [IsAdminOrReadOnly]
+    search_fields = ['name', 'category__name']
+    ordering_fields = ['price', 'name']
 
     @action(detail=False, methods=['get'])
     def cheap_drinks(self, request):
@@ -89,6 +92,11 @@ class ReviewViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
+    def get_queryset(self):
+        drink_pk = self.kwargs.get('drink_pk')
+        if drink_pk:
+            return Review.objects.filter(drink=drink_pk)
+        return Review.objects.all()
 
 class PromotionViewSet(viewsets.ModelViewSet):
     queryset = Promotion.objects.all()
