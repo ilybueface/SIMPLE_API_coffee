@@ -5,7 +5,8 @@ from coffee.serilizator import (
     Reviewserializers,
     Promotionserializers,
     Favoriteserializer,
-    Ingredientsserializer,
+    Ingredientserializer,
+    OrderItemserializers,
 )
 from rest_framework.filters import SearchFilter
 from rest_framework import viewsets
@@ -13,10 +14,11 @@ from .models import (
     Drink,
     Category,
     Order,
+    OrderItem,
     Review,
     Promotion,
     Favorite,
-    Ingredients,
+    Ingredient,
 )
 from .permissions import IsAdminOrReadOnly
 from .filter import DrinkFilter
@@ -73,17 +75,20 @@ class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = Orderserializers
     permission_classes = [IsAuthenticated]
 
-    @action(detail=True, methods=['GET'])
-    def today_orders(self, request, pk=None):
-        order = self.get_object()
-        serializer = Orderserializers(order)
-        return Response(serializer.data)
-
     @action(detail=False, methods=['get'])
     def all_orders(self, request):
         order = Order.objects.count()
         return Response({'count': order})
 
+    def perform_create(self, serializer):
+        items_data = serializer.validated_data.pop('items_data')
+        order = serializer.save()
+        for item in items_data:
+            OrderItem.objects.create(
+                order=order,
+                drink_id=item['drink_id'],
+                quantity=item['quantity'],
+            )
 
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.all()
@@ -130,9 +135,9 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         return Favorite.objects.filter(user=self.request.user)
 
 
-class IngredientsViewSet(viewsets.ModelViewSet):
-    queryset = Ingredients.objects.all()
-    serializer_class = Ingredientsserializer
+class IngredientViewSet(viewsets.ModelViewSet):
+    queryset = Ingredient.objects.all()
+    serializer_class = Ingredientserializer
     permission_classes = [IsAdminOrReadOnly]
 
     def perform_create(self, serializer):

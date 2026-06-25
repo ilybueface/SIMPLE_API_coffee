@@ -4,10 +4,11 @@ from .models import (
     Drink,
     Category,
     Order,
+    OrderItem,
     Review,
     Promotion,
     Favorite,
-    Ingredients,
+    Ingredient,
 )
 from rest_framework import serializers
 
@@ -36,17 +37,31 @@ class Drinkserializers(serializers.ModelSerializer):
         ]
 
 
-class Orderserializers(serializers.ModelSerializer):
+class OrderItemserializers(serializers.ModelSerializer):
     drink = Drinkserializers(read_only=True)
     drink_id = serializers.IntegerField(write_only=True)
+    quantity = serializers.IntegerField()
+
+    class Meta:
+        model = OrderItem
+        fields = [
+            'drink',
+            'drink_id',
+            'quantity',
+        ]
+
+
+class Orderserializers(serializers.ModelSerializer):
+    items = OrderItemserializers(many=True, read_only=True)
+    items_data = OrderItemserializers(write_only=True, many=True)
 
     class Meta:
         model = Order
         fields = [
-            'id',
-            'date',
-            'drink',
-            'drink_id'
+            'created_at',
+            'items_data',
+            'details',
+            'items',
         ]
 
 
@@ -99,7 +114,7 @@ class Favoriteserializer(serializers.ModelSerializer):
         ]
 
 
-class Ingredientsserializer(serializers.ModelSerializer):
+class Ingredientserializer(serializers.ModelSerializer):
     drinks = Drinkserializers(read_only=True, many=True)
     drinks_ids = serializers.PrimaryKeyRelatedField(
         write_only=True,
@@ -108,7 +123,7 @@ class Ingredientsserializer(serializers.ModelSerializer):
     )
 
     class Meta:
-        model = Ingredients
+        model = Ingredient
         fields = [
             'drinks',
             'drinks_ids',
