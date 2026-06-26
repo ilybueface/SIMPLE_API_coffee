@@ -28,8 +28,8 @@ software licensing fees.
 
 ## Installation
 
-git clone https://github.com/ilybueface/ORM_PROJECT
-cd ORM_PROJECT
+git clone https://github.com/ilybueface/first_orm_project
+cd first_orm_project
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
